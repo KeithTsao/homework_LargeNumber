@@ -34,7 +34,7 @@ inline int lNcmp(const struct largeNum *arg1, const struct largeNum *arg2)
 {
     if(arg1->len != arg2->len)
     {
-        return (arg1->len > arg2->len);
+        return (arg1->len - arg2->len);
     }
     else
     {
@@ -45,7 +45,7 @@ inline int lNcmp(const struct largeNum *arg1, const struct largeNum *arg2)
         {
             if(arg1->num[i] != arg2->num[i])
             {
-                return ((arg1->num[i] > arg2->num[i])*flag);
+                return ((arg1->num[i] - arg2->num[i])*flag);
             }
             else
             {
@@ -65,6 +65,32 @@ inline void jumpLine()
 {
     while('\n' != getchar());
     return;
+}
+
+inline void discardZero(struct largeNum * num)
+{
+    unsigned char *p, *q;
+    int i = 0;
+    int len = (num->len > 0?num->len:-num->len);
+    q = p = num->num;
+    while(*q == 0)
+    {
+        ++q;
+    }
+    if(q == p)
+    {
+        return;
+    }
+    else
+    {
+        while(i < len)
+        {
+            *p = *q;
+            ++p, ++q;
+            ++i;
+        }
+        return;
+    }
 }
 
 #endif // LARGE_NUM_H
