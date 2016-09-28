@@ -1,5 +1,9 @@
 #include "large_num.h"
 
+extern inline int isNum(int c);
+extern inline int lNcmp(const struct largeNum *arg1, const struct largeNum *arg2);
+extern inline void jumpLine();
+
 void initMulTable()
 {
     char i,j;
@@ -39,7 +43,17 @@ int readInNum(struct largeNum *num)
             flag = 1;//positive
             charactor = getchar();
         }
-        memset(num->num,LEN_MAX, 1);
+        while(charactor == '0')
+        {
+            charactor = getchar();//去除多余0
+        }
+        num->num = (unsigned char*)malloc((LEN_MAX+1)*sizeof(char));
+        if(num->num == NULL)
+        {
+            printf("Memory run out.");
+            return 0;
+        }
+        memset(num->num,LEN_MAX+1, 1);
         for(len = 0; len < LEN_MAX; ++len)
         {
             if(!isNum(charactor))
@@ -56,7 +70,9 @@ int readInNum(struct largeNum *num)
             else
             {
                 num->num[len] = charactor-'0';
+
             }
+            charactor = getchar();
         }
         if(len == 0)
         {
@@ -69,7 +85,7 @@ int readInNum(struct largeNum *num)
         }
         else
         {
-            len = flag * (len + 1);
+            num->len = flag*(len);
             return len;
         }
     }
@@ -77,8 +93,16 @@ int readInNum(struct largeNum *num)
 
 int printNum(const struct largeNum *num)
 {
-    int i;
-    for(i = 0; i < num->len; ++i)
+    int i = 0;
+    int len = num->len;
+    if(len < 0)
+    {
+        putchar('-');
+        len = -len;
+    }
+    for(i = 0; num->num[i] == 0; ++i);
+
+    for(; len > 0; ++i,--len)
     {
         putchar('0' + num->num[i]);
     }
@@ -86,7 +110,64 @@ int printNum(const struct largeNum *num)
     return 0;
 }
 
-struct largeNum * add(const struct largeNum *arg1, const struct largeNum *arg2)
+struct largeNum * add(struct largeNum *arg1, struct largeNum *arg2)
 {
+    int flag1 = arg1->len>0?1:-1;
+    int flag2 = arg2->len>0?1:-1;
+    int len1  = flag1 * arg1->len;
+    int len2  = flag2 * arg2->len;
+    int len_ans = len1 > len2 ? len1 : len2;
+    struct largeNum *ans = NULL;
+    unsigned char carrier;
+    unsigned char current;
+    if(flag1 != flag2)
+    {
+        arg2->len = -arg2->len;
+        return sub(arg1, arg2);
+    }
+    else
+    {
+        ans = (struct largeNum*)malloc(sizeof(struct largeNum));
+        if(ans == NULL)
+        {
+            return NULL;
+        }
+        ans->num = (unsigned char *)malloc(sizeof(char)*(len_ans + 2));
+        if(ans->num == NULL)
+        {
+            return NULL;
+        }
 
+        ans->len = len_ans;
+        --len1, --len2;
+        carrier = 0;
+        while(len1 >= 0 && len2 >= 0)
+        {
+            current = arg1->num[len1] + arg2->num[len2] + carrier;
+            if(current < 10)
+            {
+                ans->num[len_ans] = current;
+                carrier = 0;
+            }
+            else
+            {
+                carrier = 1;
+                ans->num[len_ans] = current - 10;
+            }
+            --len1, --len2, --len_ans;
+        }
+        if(carrier == 1)
+        {
+            ans->num[len_ans] = 1;
+            ++(ans->len);
+        }
+        ans->len = flag1 * ans->len;
+
+        return ans;
+    }
+}
+
+struct largeNum * sub(struct largeNum *arg1, struct largeNum *arg2)
+{
+    return NULL;
 }
