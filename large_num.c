@@ -53,6 +53,7 @@ int readInNum(struct largeNum *num)
         num->num = (unsigned char*)malloc((LEN_MAX+1)*sizeof(char));
         if(num->num == NULL)
         {
+            free(num);
             printf("Memory run out.");
             return 0;
         }
@@ -118,6 +119,11 @@ inline int printNum(const struct largeNum *num)
 
 int putsNum(const struct largeNum *num)
 {
+    if(num == NULL)
+    {
+        printf("error input!\n");
+        return -1;
+    }
     printNum(num);
     putchar('\n');
     return 0;
@@ -125,6 +131,11 @@ int putsNum(const struct largeNum *num)
 
 int print2Num(const struct largeNum *num1, const struct largeNum *num2)
 {
+    if(num1 == NULL || num2 == NULL)
+    {
+        printf("error input!\n");
+        return -1;
+    }
     printNum(num1);
     putchar(' ');
     printNum(num2);
@@ -291,11 +302,8 @@ struct largeNum * sub(struct largeNum *arg1, struct largeNum *arg2)
 
 struct largeNum * mul(struct largeNum *arg1, struct largeNum *arg2)
 {
-    int flag1 = arg1->len>0?1:-1;
     int flag2 = arg2->len>0?1:-1;
-    int len1  = flag1 * arg1->len;
     int len2  = flag2 * arg2->len;
-    int len_ans = len1 + len2;
     struct largeNum *ans, *a, *b;
     int e = 0;
 
@@ -339,7 +347,6 @@ struct largeNum * mul_s(struct largeNum *arg, int k, int e)
 
     if(k == 0 || (len == 1 && arg->num[0] == 0))
     {
-        printf("is Zero\n");
         ans->num = (unsigned char *)malloc(sizeof(char)*2);
         if(ans->num == NULL)
         {
@@ -380,4 +387,173 @@ struct largeNum * mul_s(struct largeNum *arg, int k, int e)
     }
     ans->len = ans->len * flag;
     return ans;
+}
+
+struct largeNum * divL(struct largeNum *arg1, struct largeNum *arg2, struct largeNum **_remain)
+{
+    if(arg1->len < 0 || arg2->len < 0 || (arg2->len == 1 && arg2->num[0] == 0))
+    {
+        return NULL;
+    }
+    int len1  = arg1->len;
+    int len2  = arg2->len;
+    int i;//loop variant
+    struct largeNum *ans;
+    struct largeNum *remain;
+    struct largeNum *(table_div[10]);
+
+    for(i = 0; i < 10; ++i)
+    {
+        table_div[i] = mul_s(arg2, i, 0);
+        if(table_div[i] == NULL)
+        {
+            while(i-->0)
+            {
+                free(table_div[i]->num);
+                free(table_div[i]);
+            }
+            return NULL;
+        }
+    }
+    ans = (struct largeNum *)malloc(sizeof(struct largeNum));
+    if(ans == NULL)
+    {
+        for(i = 0; i < 10; ++i)
+        {
+            free(table_div[i]->num);
+            free(table_div[i]);
+        }
+        return NULL;
+    }
+    struct largeNum * dividend = lNumcopy(arg1);
+    struct largeNum * divisor_e;
+    if(lNcmp(dividend, arg2) < 0)
+    {
+        remain = lNumcopy(dividend);
+        ans->num = (unsigned char *)malloc(2*sizeof(char));
+        if(ans->num == NULL)
+        {
+            for(i = 0; i < 10; ++i)
+            {
+                free(table_div[i]->num);
+                free(table_div[i]);
+            }
+            free(dividend->num);
+            free(remain->num);
+            free(dividend);
+            free(remain);
+            free(ans);
+            return NULL;
+        }
+        ans->len = 1;
+        ans->num[0] = ans->num[1] = 0;
+        *_remain = remain;
+        return ans;
+    }
+
+    ans->len = 0;
+    int e = len1 - len2;
+    ans->num = (unsigned char *)malloc((e + 1));
+    if(ans->num == NULL)
+    {
+        for(i = 0; i < 10; ++i)
+        {
+            free(table_div[i]->num);
+            free(table_div[i]);
+        }
+        free(dividend->num);
+        free(dividend);
+        free(ans);
+        return NULL;
+    }
+    memset(ans->num, 0, e + 1);
+
+    for(; e >= 0; --e)
+    {
+        dividend->len -= e;
+        for(i = 0; lNcmp(dividend, table_div[i]) >= 0; ++i);
+        if(i == 1)
+        {
+            dividend->len += e;
+            if(e != len1 - len2)
+            {
+                ans->num[ans->len] = 0;
+                ans->len++;
+            }
+            continue;
+        }
+        else
+        {
+            --i;
+            dividend->len += e;
+            divisor_e = LNexp(table_div[i], e);
+            remain = sub(dividend, divisor_e);
+
+            free(dividend->num);
+            free(divisor_e->num);
+            free(dividend);
+            free(divisor_e);
+
+            dividend = remain;
+            *_remain = remain;
+            ans->num[ans->len] = i;
+            ans->len++;
+        }
+    }
+    for(i = 0; i < 10; ++i)
+    {
+        free(table_div[i]->num);
+        free(table_div[i]);
+    }
+    return ans;
+
+}
+
+struct largeNum * LNexp(struct largeNum * num, int e)
+{
+    int flag = num->len > 0? 1:-1;
+    int len = num->len * flag;
+    if(num == 0 || (num->len == 1 && num->num[0] == 0))
+    {
+        return NULL;
+    }
+
+    struct largeNum *ans = (struct largeNum *) malloc(sizeof(struct largeNum));
+    if(ans == NULL)
+    {
+        return NULL;
+    }
+    ans->num = (unsigned char *)malloc((len + e + 1)* sizeof(char));
+    if(ans->num == NULL)
+    {
+        free(ans);
+        return NULL;
+    }
+
+    memset(ans->num, 0, (unsigned)(len+e+1));
+    memcpy(ans->num, num->num, (unsigned)len);
+    ans->len = len + e;
+    ans->len = ans->len * flag;
+    return ans;
+}
+
+struct largeNum * lNumcopy(const struct largeNum * source)
+{
+    int flag = source->len > 0 ? 1:-1;
+    int len = source->len * flag;
+    struct largeNum *dst = (struct largeNum *)malloc(sizeof(struct largeNum));
+    if(dst == NULL)
+    {
+        return NULL;
+    }
+    dst->num = (unsigned char *)malloc(sizeof(char) * (unsigned)(len + 1));
+    if(dst->num == NULL)
+    {
+        free(dst);
+        return NULL;
+    }
+    memset(dst->num, 0, (unsigned)(len+1));
+    memcpy(dst->num, source->num, (unsigned) len);
+    dst->len = source->len;
+    return dst;
 }

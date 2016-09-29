@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[])
 {
-    struct largeNum arg1, arg2, *ans, **remain;
+    struct largeNum arg1, arg2, *ans, *remain;
     int end;
     char op;
 
@@ -41,6 +41,12 @@ int main(int argc, char *argv[])
         case '*':
             ans = mul(&arg1, &arg2);
             putsNum(ans);
+            break;
+        case '/':
+            ans = divL(&arg1, &arg2, &remain);
+            print2Num(ans,remain);
+            free(remain->num);
+            free(remain);
             break;
         default:
             printf("error input!\n");

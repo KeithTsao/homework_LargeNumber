@@ -31,6 +31,7 @@ struct largeNum * mul(struct largeNum *arg1, struct largeNum *arg2);
 struct largeNum * mul_s(struct largeNum *arg, int k, int e);
 //返回值是商，__remain是余数，返回超长表示除零错误
 struct largeNum * divL(struct largeNum *arg1, struct largeNum *arg2, struct largeNum **_remain);
+struct largeNum * LNexp(struct largeNum *num, int e);
 
 struct largeNum * lNumcopy(const struct largeNum * source);
 //正数表示前者较大，负数表示后者较大，0表示相等，inline有待校正
