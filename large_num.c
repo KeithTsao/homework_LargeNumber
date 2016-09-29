@@ -99,7 +99,7 @@ int readInNum(struct largeNum *num)
     }
 }
 
-int printNum(const struct largeNum *num)
+inline int printNum(const struct largeNum *num)
 {
     int i = 0;
     int len = num->len;
@@ -113,6 +113,21 @@ int printNum(const struct largeNum *num)
     {
         putchar('0' + num->num[i]);
     }
+    return 0;
+}
+
+int putsNum(const struct largeNum *num)
+{
+    printNum(num);
+    putchar('\n');
+    return 0;
+}
+
+int print2Num(const struct largeNum *num1, const struct largeNum *num2)
+{
+    printNum(num1);
+    putchar(' ');
+    printNum(num2);
     putchar('\n');
     return 0;
 }
@@ -294,7 +309,6 @@ struct largeNum * mul(struct largeNum *arg1, struct largeNum *arg2)
     {
         b = mul_s(arg1, arg2->num[len2], e);
         ans = add(a, b);
-        printNum(ans);///
 
         free(a->num);
         free(a);
@@ -351,7 +365,6 @@ struct largeNum * mul_s(struct largeNum *arg, int k, int e)
     while(len >= 0)
     {
         current = g_mulTable[k][arg->num[len]] + carrier;
-        printf("in mul_s, k:%d, arg->num[len]:%d, current:%d\n", k, arg->num[len], current);///
         carrier = current / 10;
         ans->num[len_ans] = current % 10;
         --len, --len_ans;
@@ -366,6 +379,5 @@ struct largeNum * mul_s(struct largeNum *arg, int k, int e)
         discardZero(ans);
     }
     ans->len = ans->len * flag;
-    printNum(ans);///
     return ans;
 }

@@ -32,15 +32,15 @@ int main(int argc, char *argv[])
         {
         case '+':
             ans = add(&arg1, &arg2);
-            printNum(ans);
+            putsNum(ans);
             break;
         case '-':
             ans = sub(&arg1, &arg2);
-            printNum(ans);
+            putsNum(ans);
             break;
         case '*':
             ans = mul(&arg1, &arg2);
-            printNum(ans);
+            putsNum(ans);
             break;
         default:
             printf("error input!\n");

@@ -19,6 +19,8 @@ void initMulTable();
 //读入一个大整数，返回整数的长度，绝对值为LEN_MAX表示超长，返回0表示遇到结尾，返回ERROR_OCCUR为输入错误
 int readInNum(struct largeNum *num);
 int printNum(const struct largeNum *num);
+int putsNum(const struct largeNum *num);
+int print2Num(const struct largeNum *num1, const struct largeNum *num2);
 
 //非交换运算以前者为arg1为第一操作数
 struct largeNum * add(struct largeNum *arg1, struct largeNum *arg2);
