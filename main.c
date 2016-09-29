@@ -5,6 +5,9 @@ int main(int argc, char *argv[])
     struct largeNum arg1, arg2, *ans, **remain;
     int end;
     char op;
+
+    initMulTable();
+
     while(1)
     {
         end = readInNum(&arg1);
@@ -33,6 +36,10 @@ int main(int argc, char *argv[])
             break;
         case '-':
             ans = sub(&arg1, &arg2);
+            printNum(ans);
+            break;
+        case '*':
+            ans = mul(&arg1, &arg2);
             printNum(ans);
             break;
         default:

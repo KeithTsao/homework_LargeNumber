@@ -7,7 +7,7 @@ extern inline void discardZero(struct largeNum * num);
 
 void initMulTable()
 {
-    char i,j;
+    unsigned char i,j;
     for( i = 0; i < 10; ++i)
     {
         for(j = 0; j < 10; ++j)
@@ -22,6 +22,7 @@ int readInNum(struct largeNum *num)
     int len;
     int flag = 1;//flag for the num is negtive(-1)/positive(1)
     int charactor;
+    int maybeZero = 0;
 
     charactor = getchar();
     if(charactor == -1)
@@ -46,6 +47,7 @@ int readInNum(struct largeNum *num)
         }
         while(charactor == '0')
         {
+            maybeZero = 1;
             charactor = getchar();//去除多余0
         }
         num->num = (unsigned char*)malloc((LEN_MAX+1)*sizeof(char));
@@ -54,7 +56,7 @@ int readInNum(struct largeNum *num)
             printf("Memory run out.");
             return 0;
         }
-        memset(num->num,LEN_MAX+1, 1);
+        memset(num->num, 0, LEN_MAX+1);
         for(len = 0; len < LEN_MAX; ++len)
         {
             if(!isNum(charactor))
@@ -75,7 +77,7 @@ int readInNum(struct largeNum *num)
             }
             charactor = getchar();
         }
-        if(len == 0)
+        if(len == 0 && maybeZero == 0)
         {
             return ERROR_OCCUR;
         }
@@ -83,6 +85,11 @@ int readInNum(struct largeNum *num)
         {
             jumpLine();
             return ERROR_OCCUR;
+        }
+        else if(maybeZero == 1 && len == 0)
+        {
+            num->len = 1;
+            return num->len;
         }
         else
         {
@@ -135,6 +142,7 @@ struct largeNum * add(struct largeNum *arg1, struct largeNum *arg2)
         ans->num = (unsigned char *)malloc(sizeof(char)*(len_ans + 2));
         if(ans->num == NULL)
         {
+            free(ans);
             return NULL;
         }
 
@@ -225,6 +233,7 @@ struct largeNum * sub(struct largeNum *arg1, struct largeNum *arg2)
         ans->num = (unsigned char *)malloc(sizeof(char) * (len_ans + 1));
         if(ans->num == NULL)
         {
+            free(ans);
             return NULL;
         }
 
@@ -263,4 +272,100 @@ struct largeNum * sub(struct largeNum *arg1, struct largeNum *arg2)
         ans->len = flag1 * ans->len;
         return ans;
     }
+}
+
+struct largeNum * mul(struct largeNum *arg1, struct largeNum *arg2)
+{
+    int flag1 = arg1->len>0?1:-1;
+    int flag2 = arg2->len>0?1:-1;
+    int len1  = flag1 * arg1->len;
+    int len2  = flag2 * arg2->len;
+    int len_ans = len1 + len2;
+    struct largeNum *ans, *a, *b;
+    int e = 0;
+
+    --len2;
+    a = mul_s(arg1, arg2->num[len2], e);
+
+    ans = a;
+    ++e, --len2;
+
+    while(len2 >= 0)
+    {
+        b = mul_s(arg1, arg2->num[len2], e);
+        ans = add(a, b);
+        printNum(ans);///
+
+        free(a->num);
+        free(a);
+        free(b->num);
+        free(b);
+
+        a = ans;
+        ++e, --len2;
+    }
+    ans->len = ans->len * flag2;
+    return ans;
+}
+
+struct largeNum * mul_s(struct largeNum *arg, int k, int e)
+{
+    struct largeNum *ans;
+    int flag = arg->len > 0? 1: -1;
+    int len = flag * arg->len;
+    int len_ans = len + 1;
+    unsigned char current;
+    unsigned char carrier;
+
+    ans = (struct largeNum *)malloc(sizeof(struct largeNum));
+    if(ans == NULL)
+    {
+        return NULL;
+    }
+
+    if(k == 0 || (len == 1 && arg->num[0] == 0))
+    {
+        printf("is Zero\n");
+        ans->num = (unsigned char *)malloc(sizeof(char)*2);
+        if(ans->num == NULL)
+        {
+            free(ans);
+            return NULL;
+        }
+        ans->len = 1;
+        ans->num[0] = ans->num[1] = 0;
+        return ans;
+    }
+
+    ans->num = (unsigned char *)malloc(sizeof(char)*(len + 2 + e));
+    if(ans->num == NULL)
+    {
+        free(ans);
+        return NULL;
+    }
+    memset(ans->num, 0, (len+2+e)*sizeof(char));
+
+    --len, --len_ans;
+    ans->len = len_ans + e;
+    carrier = 0;
+    while(len >= 0)
+    {
+        current = g_mulTable[k][arg->num[len]] + carrier;
+        printf("in mul_s, k:%d, arg->num[len]:%d, current:%d\n", k, arg->num[len], current);///
+        carrier = current / 10;
+        ans->num[len_ans] = current % 10;
+        --len, --len_ans;
+    }
+    if(carrier != 0)
+    {
+        ans->num[len_ans] = carrier;
+        ++ans->len;
+    }
+    else
+    {
+        discardZero(ans);
+    }
+    ans->len = ans->len * flag;
+    printNum(ans);///
+    return ans;
 }

@@ -13,7 +13,7 @@ struct largeNum
     int len;//长度，同时以该变量正负表示整数正负
 };
 
-char g_mulTable[10][10];
+unsigned char g_mulTable[10][10];
 
 void initMulTable();
 //读入一个大整数，返回整数的长度，绝对值为LEN_MAX表示超长，返回0表示遇到结尾，返回ERROR_OCCUR为输入错误
@@ -25,6 +25,8 @@ struct largeNum * add(struct largeNum *arg1, struct largeNum *arg2);
 struct largeNum * sub(struct largeNum *arg1, struct largeNum *arg2);
 //乘法结果允许超长
 struct largeNum * mul(struct largeNum *arg1, struct largeNum *arg2);
+//辅助用一位乘法,乘数为k*10^e
+struct largeNum * mul_s(struct largeNum *arg, int k, int e);
 //返回值是商，__remain是余数，返回超长表示除零错误
 struct largeNum * divL(struct largeNum *arg1, struct largeNum *arg2, struct largeNum **_remain);
 
