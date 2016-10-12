@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
             printf("error input!\n");
             jumpLine();
             jumpLine();
+            continue;
         }
         if(end == 0) break;
 
@@ -24,6 +25,8 @@ int main(int argc, char *argv[])
         {
             printf("error input!\n");
             jumpLine();
+            free(arg1.num);
+            continue;
         }
         if(end == 0) break;
 
@@ -45,8 +48,12 @@ int main(int argc, char *argv[])
         case '/':
             ans = divL(&arg1, &arg2, &remain);
             print2Num(ans,remain);
-            free(remain->num);
-            free(remain);
+            if(NULL != remain)
+            {
+                if(NULL != remain->num)
+                    free(remain->num);
+                free(remain);
+            }
             break;
         default:
             printf("error input!\n");
@@ -57,8 +64,12 @@ int main(int argc, char *argv[])
         }
         free(arg1.num);
         free(arg2.num);
-        free(ans->num);
-        free(ans);
+        if(NULL != ans)
+        {
+            if(NULL != ans->num)
+                free(ans->num);
+            free(ans);
+        }
     }
     return 0;
 }

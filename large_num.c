@@ -53,7 +53,6 @@ int readInNum(struct largeNum *num)
         num->num = (unsigned char*)malloc((LEN_MAX+1)*sizeof(char));
         if(num->num == NULL)
         {
-            free(num);
             printf("Memory run out.");
             return 0;
         }
@@ -68,6 +67,8 @@ int readInNum(struct largeNum *num)
                 }
                 else
                 {
+                    free(num->num);
+                    jumpLine();
                     return ERROR_OCCUR;//非法字符
                 }
             }
@@ -80,10 +81,12 @@ int readInNum(struct largeNum *num)
         }
         if(len == 0 && maybeZero == 0)
         {
+            free(num->num);
             return ERROR_OCCUR;
         }
         else if(len == LEN_MAX)
         {
+            free(num->num);
             jumpLine();
             return ERROR_OCCUR;
         }
